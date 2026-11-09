@@ -25,16 +25,16 @@ git --version
 - **First time:** download a full copy of the project. In Terminal:
 
   ```bash
-  git clone https://github.com/Dangthrimble/4ss24ssxml.git
-  cd 4ss24ssxml
+  git clone https://github.com/Dangthrimble/forscore-setlist.git
+  cd forscore-setlist
   ```
 
-  This creates a folder named `4ss24ssxml` with the project files inside.
+  This creates a folder named `forscore-setlist` with the project files inside.
 
 - **Later:** get the latest project files:
 
   ```bash
-  cd 4ss24ssxml
+  cd forscore-setlist
   git pull
   ```
 
