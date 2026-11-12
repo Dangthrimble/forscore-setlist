@@ -7,6 +7,8 @@ Tools that produce forScore **Open Setlist** `.4ss` files (XML body) for **forSc
 | `4ss2open4ss` | Native `.4ss` setlist (gzip / binary plist) → Open Setlist |
 | `txt2open4ss` | Text file (one title per non-blank line) → Open Setlist placeholders |
 
+If you only want the command-line tools, you do **not** need to download this project’s files. Skip **This project’s files**, set up **Git** and **Go** below, then go to **Install**.
+
 ## Git
 
 Git is a tool that downloads and updates project files on your computer.
@@ -21,6 +23,8 @@ git --version
 ```
 
 ## This project’s files (repository)
+
+Optional. Only needed if you want a copy of the source on your computer (or to build from a local checkout). Not required to install the commands.
 
 - **First time:** download a full copy of the project. In Terminal:
 
@@ -57,7 +61,7 @@ Go is the programming toolkit used to download and install these command-line pr
 
 ## Install
 
-In Terminal, run:
+In Terminal, run (no local copy of the project is required):
 
 ```bash
 go install github.com/Dangthrimble/4ss24ssxml/cmd/4ss2open4ss@latest
