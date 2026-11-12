@@ -9,6 +9,12 @@ or update the CLIs: include a plain-English description **or** a link to one tha
 covers both install and update. If linking out, the link target must suit
 non-technical readers; add a one-line summary beside the link.
 
+## Before anything else (required)
+
+State clearly that people who **only** want the command-line tools do **not** need
+to download or clone this project’s files. They can skip **This project’s files**,
+set up **Go** (and **Git** as documented below), then follow **Install**.
+
 ## Git (required)
 
 - **Install Git** — what Git is in one sentence (“a tool that downloads and updates
@@ -19,7 +25,10 @@ non-technical readers; add a one-line summary beside the link.
 
 Afterward: open a new Terminal and run `git --version` to confirm it worked.
 
-## This project’s files (repository) (required)
+## This project’s files (repository) (optional)
+
+Only for people who want a copy of the source on their computer (or to build from a
+local checkout). **Not** required to install the commands via `go install …@latest`.
 
 - **Install (first time)** — download a full copy of the project, e.g.:
 
@@ -78,6 +87,8 @@ In Terminal, run (one line per command):
 ```bash
 go install MODULE/cmd/CMD@latest
 ```
+
+No local copy of the project is required for these commands.
 
 ## Check that it worked
 
