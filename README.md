@@ -1,4 +1,4 @@
-# 4ss24ssxml
+# forscore-setlist
 
 Tools that produce forScore **Open Setlist** `.4ss` files (XML body) for **forScore 12+**.
 
@@ -64,8 +64,8 @@ Go is the programming toolkit used to download and install these command-line pr
 In Terminal, run (no local copy of the project is required):
 
 ```bash
-go install github.com/Dangthrimble/4ss24ssxml/cmd/4ss2open4ss@latest
-go install github.com/Dangthrimble/4ss24ssxml/cmd/txt2open4ss@latest
+go install github.com/Dangthrimble/forscore-setlist/cmd/4ss2open4ss@latest
+go install github.com/Dangthrimble/forscore-setlist/cmd/txt2open4ss@latest
 ```
 
 ## Check that it worked
