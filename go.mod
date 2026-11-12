@@ -1,4 +1,4 @@
-module github.com/Dangthrimble/4ss24ssxml
+module github.com/Dangthrimble/forscore-setlist
 
 go 1.24.1
 

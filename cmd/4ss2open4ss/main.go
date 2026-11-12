@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Dangthrimble/4ss24ssxml/internal/convert"
+	"github.com/Dangthrimble/forscore-setlist/internal/convert"
 )
 
 func main() {

@@ -1,7 +1,7 @@
 .DS_Store
 *.exe
-/4ss24ssxml
-/cmd/4ss24ssxml/4ss24ssxml
+/4ss2open4ss
+/txt2open4ss
 *.test
 .idea/
 .vscode/
