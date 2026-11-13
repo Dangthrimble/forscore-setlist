@@ -28,7 +28,8 @@ type setlistItem struct {
 
 const forScore12PlusSuffix = " (forScore12plus)"
 
-func OutputPath(input string) string {
+// NativeOutputPath returns a sibling path that keeps the input extension and adds the forScore 12+ suffix.
+func NativeOutputPath(input string) string {
 	dir := filepath.Dir(input)
 	base := filepath.Base(input)
 	ext := filepath.Ext(base)
@@ -62,7 +63,8 @@ func FromText(data []byte, title string) ([]byte, error) {
 	return marshalOpenSetlist(title, items)
 }
 
-func Convert(data []byte, title string) ([]byte, error) {
+// FromNative builds an Open Setlist XML document from a gzip-compressed native forScore setlist.
+func FromNative(data []byte, title string) ([]byte, error) {
 	if isOpenSetlistXML(data) {
 		return nil, fmt.Errorf("file is already an Open Setlist XML document")
 	}
