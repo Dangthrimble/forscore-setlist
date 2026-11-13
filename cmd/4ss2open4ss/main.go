@@ -18,12 +18,12 @@ func main() {
 		fmt.Fprintf(os.Stderr, "read: %v\n", err)
 		os.Exit(1)
 	}
-	xml, err := convert.Convert(data, convert.SetlistTitle(input))
+	xml, err := convert.FromNative(data, convert.SetlistTitle(input))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "convert: %v\n", err)
 		os.Exit(1)
 	}
-	out := convert.OutputPath(input)
+	out := convert.NativeOutputPath(input)
 	if err := os.WriteFile(out, xml, 0644); err != nil {
 		fmt.Fprintf(os.Stderr, "write: %v\n", err)
 		os.Exit(1)
