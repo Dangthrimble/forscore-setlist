@@ -5,9 +5,14 @@ import (
 	"os"
 
 	"github.com/Dangthrimble/forscore-setlist/internal/convert"
+	"github.com/Dangthrimble/forscore-setlist/internal/version"
 )
 
 func main() {
+	if len(os.Args) == 2 && os.Args[1] == "--version" {
+		fmt.Println(version.String())
+		return
+	}
 	if len(os.Args) != 2 {
 		fmt.Fprintf(os.Stderr, "usage: txt2open4ss <file.txt>\n")
 		os.Exit(2)
