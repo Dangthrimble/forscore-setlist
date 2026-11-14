@@ -43,8 +43,9 @@ jobs:
             ext=".exe"
           fi
           mkdir -p dist
-          go build -o "dist/4ss2open4ss${ext}" ./cmd/4ss2open4ss
-          go build -o "dist/txt2open4ss${ext}" ./cmd/txt2open4ss
+          ldflags="-X github.com/Dangthrimble/forscore-setlist/internal/version.Version=${GITHUB_REF_NAME}"
+          go build -ldflags "$ldflags" -o "dist/4ss2open4ss${ext}" ./cmd/4ss2open4ss
+          go build -ldflags "$ldflags" -o "dist/txt2open4ss${ext}" ./cmd/txt2open4ss
           name="forscore-setlist_${GOOS}_${GOARCH}"
           if [ "$GOOS" = "windows" ]; then
             (cd dist && zip "../${name}.zip" "4ss2open4ss${ext}" "txt2open4ss${ext}")

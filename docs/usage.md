@@ -7,9 +7,13 @@ Back to [README](../README.md).
 ```bash
 4ss2open4ss <file.4ss>
 txt2open4ss <file.txt>
+4ss2open4ss --version
+txt2open4ss --version
 ```
 
-Each writes a sibling file named `* (forScore12plus).4ss` (Open Setlist is only readable in forScore 12+), prints the output path, and exits:
+Each conversion writes a sibling file named `* (forScore12plus).4ss` (Open Setlist is only readable in forScore 12+), prints the output path, and exits. `--version` prints one version line and exits `0`.
+
+Exits:
 
 - `2` — bad usage
 - `1` — read / convert / write error
