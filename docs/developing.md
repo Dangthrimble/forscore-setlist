@@ -26,3 +26,9 @@ go test ./...
 ```
 
 Fixture: [`internal/convert/testdata`](../internal/convert/testdata).
+
+## CI and releases
+
+[`.github/workflows/ci.yml`](../.github/workflows/ci.yml) runs `go test ./...`, `go vet ./...`, and builds both commands on Ubuntu, macOS, and Windows for every push and pull request.
+
+[`.github/workflows/release.yml`](../.github/workflows/release.yml) runs when a `v*` tag is pushed. It publishes `4ss2open4ss` and `txt2open4ss` for darwin, linux, and windows (amd64 and arm64). macOS and Linux archives are `.tar.gz`; Windows archives are `.zip` with `.exe` binaries. `go install …@latest` remains the documented install path.

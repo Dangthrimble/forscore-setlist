@@ -1,0 +1,69 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - goos: darwin
+            goarch: amd64
+          - goos: darwin
+            goarch: arm64
+          - goos: linux
+            goarch: amd64
+          - goos: linux
+            goarch: arm64
+          - goos: windows
+            goarch: amd64
+          - goos: windows
+            goarch: arm64
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: 1.24.x
+      - name: Build archive
+        shell: bash
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: "0"
+        run: |
+          ext=""
+          if [ "$GOOS" = "windows" ]; then
+            ext=".exe"
+          fi
+          mkdir -p dist
+          go build -o "dist/4ss2open4ss${ext}" ./cmd/4ss2open4ss
+          go build -o "dist/txt2open4ss${ext}" ./cmd/txt2open4ss
+          name="forscore-setlist_${GOOS}_${GOARCH}"
+          if [ "$GOOS" = "windows" ]; then
+            (cd dist && zip "../${name}.zip" "4ss2open4ss${ext}" "txt2open4ss${ext}")
+          else
+            tar -C dist -czf "${name}.tar.gz" "4ss2open4ss" "txt2open4ss"
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: forscore-setlist_${{ matrix.goos }}_${{ matrix.goarch }}
+          path: forscore-setlist_*
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*
