@@ -1,6 +1,7 @@
 # Install with Go
 
-Back to [README](../README.md).
+Back to [README](../README.md). Prefer a [release package](../INSTALL.md) if you do
+not want to install Go.
 
 If you only want the command-line tools, you do **not** need to download this
 project’s files. Skip **This project’s files (optional)** below. The **Install**
