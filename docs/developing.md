@@ -29,6 +29,11 @@ Fixture: [`internal/convert/testdata`](../internal/convert/testdata).
 
 ## CI and releases
 
-[`.github/workflows/ci.yml`](../.github/workflows/ci.yml) runs `go test ./...`, `go vet ./...`, and builds both commands on Ubuntu, macOS, and Windows for every push and pull request.
+[`.github/workflows/ci.yml`](../.github/workflows/ci.yml) runs tests natively on
+all six release targets (macOS Intel/Apple Silicon, Windows x64/ARM64 and Linux
+x64/ARM64). The race detector runs on every target except Windows ARM64, where
+Go does not support it. The workflow also runs `go vet`, `gofmt`, staticcheck and
+govulncheck, and builds both commands. A final `CI gate` job aggregates the
+required checks.
 
 [`.github/workflows/release.yml`](../.github/workflows/release.yml) runs when a `v*` tag is pushed. It publishes `4ss2open4ss` and `txt2open4ss` for darwin, linux, and windows (amd64 and arm64). macOS and Linux archives are `.tar.gz`; Windows archives are `.zip` with `.exe` binaries. Those binaries stamp `--version` from the tag. `go install …@latest` remains the documented install path; those binaries report the module version from the install. A local `go build` reports `dev`.

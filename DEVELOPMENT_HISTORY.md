@@ -12,6 +12,7 @@
 | 2026-11-13 | Split the README into a hub with linked guides; added the `maintain-before-commit` skill. |
 | 2026-11-14 | Added CI and multi-platform release workflows; both commands report the Git tag from `--version`; released v0.1.1. |
 | 2026-11-20 | Adopted the shared cross-agent guidance, UK English rule, and release and packaging conventions. |
+| 2026-11-20 | Standardised CI with race tests, gofmt, vet, staticcheck, govulncheck, and a required `CI gate`; raised the minimum Go version to 1.26.6. |
 
 ## Design notes
 
