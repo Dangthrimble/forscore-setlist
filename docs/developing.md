@@ -9,6 +9,7 @@ Back to [README](../README.md).
 | [`cmd/4ss2open4ss`](../cmd/4ss2open4ss) | Native `.4ss` → Open Setlist |
 | [`cmd/txt2open4ss`](../cmd/txt2open4ss) | Text lines → Open Setlist placeholders |
 | [`cmd/buildpackage`](../cmd/buildpackage) | Release archive builder |
+| [`internal/cli`](../internal/cli) | Shared version, usage and single-file argument handling |
 | [`internal/convert`](../internal/convert) | Conversion library |
 | [`release.json`](../release.json) | Product, module, command and extra-file configuration for packaging |
 
