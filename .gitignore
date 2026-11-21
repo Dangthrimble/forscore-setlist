@@ -2,6 +2,7 @@
 *.exe
 /4ss2open4ss
 /txt2open4ss
+/dist/
 *.test
 .idea/
 .vscode/
