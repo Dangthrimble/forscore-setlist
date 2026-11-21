@@ -14,6 +14,7 @@
 | 2026-11-20 | Adopted the shared cross-agent guidance, UK English rule, and release and packaging conventions. |
 | 2026-11-20 | Standardised CI with race tests, gofmt, vet, staticcheck, govulncheck, and a required `CI gate`; raised the minimum Go version to 1.26.11. |
 | 2026-11-21 | Added the Go release packager, six native CI-built packages, versioned ZIP assets, per-asset and combined checksums, and a tag-validated release workflow. |
+| 2026-11-21 | Standardised CLI behaviour: `<command> <version>` output, `--help`/`-h`, `--` termination, command-prefixed errors, and exit `2` for usage errors. |
 
 ## Design notes
 

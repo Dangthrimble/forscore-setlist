@@ -11,7 +11,9 @@ txt2open4ss <file.txt>
 txt2open4ss --version
 ```
 
-Each conversion writes a sibling file named `* (forScore12plus).4ss` (Open Setlist is only readable in forScore 12+), prints the output path, and exits. `--version` prints one version line and exits `0`.
+Use `--` before a filename that begins with a hyphen.
+
+Each conversion writes a sibling file named `* (forScore12plus).4ss` (Open Setlist is only readable in forScore 12+), prints the output path, and exits. `--version` prints `<command> <version>` and exits `0`. `--help` and `-h` print usage and exit `0`.
 
 Exits:
 
