@@ -13,6 +13,7 @@
 | 2026-11-14 | Added CI and multi-platform release workflows; both commands report the Git tag from `--version`; released v0.1.1. |
 | 2026-11-20 | Adopted the shared cross-agent guidance, UK English rule, and release and packaging conventions. |
 | 2026-11-20 | Standardised CI with race tests, gofmt, vet, staticcheck, govulncheck, and a required `CI gate`; raised the minimum Go version to 1.26.11. |
+| 2026-11-21 | Added the Go release packager, six native CI-built packages, versioned ZIP assets, per-asset and combined checksums, and a tag-validated release workflow. |
 
 ## Design notes
 

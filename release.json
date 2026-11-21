@@ -1,0 +1,6 @@
+{
+  "product": "forscore-setlist",
+  "module": "github.com/Dangthrimble/forscore-setlist",
+  "commands": ["4ss2open4ss", "txt2open4ss"],
+  "include": []
+}
