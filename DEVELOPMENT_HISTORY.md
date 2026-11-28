@@ -16,6 +16,7 @@
 | 2026-11-21 | Added the Go release packager, six native CI-built packages, versioned ZIP assets, per-asset and combined checksums, and a tag-validated release workflow. |
 | 2026-11-21 | Standardised CLI behaviour: `<command> <version>` output, `--help`/`-h`, `--` termination, command-prefixed errors, and exit `2` for usage errors. |
 | 2026-11-21 | Added the shared repository-settings script, Dependabot, issue and pull-request templates, and the security policy. |
+| 2026-11-28 | Backported the template's generic `repository.json`-driven settings script with private-repository handling and automatic ruleset creation. |
 
 ## Design notes
 
