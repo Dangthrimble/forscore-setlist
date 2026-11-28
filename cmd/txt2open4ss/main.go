@@ -22,7 +22,7 @@ func main() {
 		os.Exit(code)
 	}
 
-	data, err := os.ReadFile(input)
+	data, err := convert.ReadInput(input)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s: read: %v\n", name, err)
 		os.Exit(1)

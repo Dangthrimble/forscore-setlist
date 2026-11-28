@@ -17,10 +17,13 @@
 | 2026-11-21 | Standardised CLI behaviour: `<command> <version>` output, `--help`/`-h`, `--` termination, command-prefixed errors, and exit `2` for usage errors. |
 | 2026-11-21 | Added the shared repository-settings script, Dependabot, issue and pull-request templates, and the security policy. |
 | 2026-11-28 | Backported the template's generic `repository.json`-driven settings script with private-repository handling and automatic ruleset creation. |
+| 2026-11-28 | Added the 100-entry input limit and bounds for compressed/decompressed size, object-graph depth and title/path length; added boundary, malformed-input and fuzz tests. |
 
 ## Design notes
 
 - Native `.4ss` input is treated as gzip → binary plist → NSKeyedArchiver (`$objects` / `$top.setlist`).
 - Already-XML / Open Setlist inputs are rejected.
+- Native and text inputs are limited to 100 entries; native archives are also
+  bounded by input, decompressed, depth and string limits.
 - Output file name: input stem + ` (forScore12plus)` + `.4ss`.
 - Dependency: [`howett.net/plist`](https://pkg.go.dev/howett.net/plist).
