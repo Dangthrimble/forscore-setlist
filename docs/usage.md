@@ -34,3 +34,19 @@ Setlist items are classified as:
 ### `txt2open4ss`
 
 Blank and whitespace-only lines are skipped. Each non-blank line becomes a `<placeholder title="..." />`.
+
+## Input limits
+
+Both commands accept at most **100 entries**. In a text file, blank and
+whitespace-only lines are ignored and do not count towards the limit.
+
+The native `.4ss` path also applies these limits:
+
+- compressed input: 2 MiB;
+- decompressed plist: 4 MiB;
+- object-graph depth: 64;
+- individual title or path: 16 KiB.
+
+A setlist with 101 entries is rejected rather than truncated. If you have a
+legitimate setlist that needs more than 100 entries, open an issue with the
+fixture at <https://github.com/Dangthrimble/forscore-setlist/issues>.

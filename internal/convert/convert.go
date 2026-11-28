@@ -6,6 +6,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -27,6 +28,40 @@ type setlistItem struct {
 }
 
 const forScore12PlusSuffix = " (forScore12plus)"
+
+const (
+	// MaxSetlistEntries is the supported setlist size. Real rehearsal and
+	// concert setlists are far smaller; this bound keeps malformed input cheap.
+	MaxSetlistEntries = 100
+
+	// MaxInputBytes bounds the input file before any decompression.
+	MaxInputBytes int64 = 2 << 20
+
+	// MaxDecompressedBytes bounds the native plist after gzip decompression.
+	MaxDecompressedBytes int64 = 4 << 20
+
+	// MaxDepth bounds nesting in the NSKeyedArchiver object graph.
+	MaxDepth = 64
+
+	// MaxStringBytes bounds each title and path.
+	MaxStringBytes = 16 << 10
+)
+
+type limits struct {
+	maxEntries           int
+	maxInputBytes        int64
+	maxDecompressedBytes int64
+	maxDepth             int
+	maxStringBytes       int
+}
+
+var defaultLimits = limits{
+	maxEntries:           MaxSetlistEntries,
+	maxInputBytes:        MaxInputBytes,
+	maxDecompressedBytes: MaxDecompressedBytes,
+	maxDepth:             MaxDepth,
+	maxStringBytes:       MaxStringBytes,
+}
 
 // NativeOutputPath returns a sibling path that keeps the input extension and adds the forScore 12+ suffix.
 func NativeOutputPath(input string) string {
@@ -50,21 +85,64 @@ func SetlistTitle(input string) string {
 	return strings.TrimSuffix(base, filepath.Ext(base))
 }
 
+// ReadInput reads an input file without exceeding MaxInputBytes.
+func ReadInput(path string) ([]byte, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	data, err := io.ReadAll(io.LimitReader(file, MaxInputBytes+1))
+	if err != nil {
+		return nil, err
+	}
+	if int64(len(data)) > MaxInputBytes {
+		return nil, fmt.Errorf("input file exceeds %d bytes", MaxInputBytes)
+	}
+	return data, nil
+}
+
 // FromText builds an Open Setlist XML document with one placeholder per non-blank line.
 func FromText(data []byte, title string) ([]byte, error) {
+	return fromText(data, title, defaultLimits)
+}
+
+func fromText(data []byte, title string, lim limits) ([]byte, error) {
+	if int64(len(data)) > lim.maxInputBytes {
+		return nil, fmt.Errorf("text input exceeds %d bytes", lim.maxInputBytes)
+	}
+
 	var items []setlistItem
-	for _, line := range strings.Split(string(data), "\n") {
+	for i, line := range strings.Split(string(data), "\n") {
 		line = strings.TrimSpace(strings.TrimSuffix(line, "\r"))
 		if line == "" {
 			continue
 		}
+		if len(line) > lim.maxStringBytes {
+			return nil, fmt.Errorf("line %d exceeds %d bytes", i+1, lim.maxStringBytes)
+		}
 		items = append(items, setlistItem{Kind: kindPlaceholder, Title: line})
+		if len(items) > lim.maxEntries {
+			return nil, entryLimitError(len(items), lim.maxEntries)
+		}
 	}
 	return marshalOpenSetlist(title, items)
 }
 
+func entryLimitError(count, max int) error {
+	return fmt.Errorf("setlist has %d entries; the supported maximum is %d. Split the setlist or report a case for a higher limit", count, max)
+}
+
 // FromNative builds an Open Setlist XML document from a gzip-compressed native forScore setlist.
 func FromNative(data []byte, title string) ([]byte, error) {
+	return fromNative(data, title, defaultLimits)
+}
+
+func fromNative(data []byte, title string, lim limits) ([]byte, error) {
+	if int64(len(data)) > lim.maxInputBytes {
+		return nil, fmt.Errorf("input file exceeds %d bytes", lim.maxInputBytes)
+	}
 	if isOpenSetlistXML(data) {
 		return nil, fmt.Errorf("file is already an Open Setlist XML document")
 	}
@@ -77,9 +155,12 @@ func FromNative(data []byte, title string) ([]byte, error) {
 		return nil, fmt.Errorf("gzip: %w", err)
 	}
 	defer zr.Close()
-	raw, err := io.ReadAll(zr)
+	raw, err := io.ReadAll(io.LimitReader(zr, lim.maxDecompressedBytes+1))
 	if err != nil {
 		return nil, fmt.Errorf("gzip: %w", err)
+	}
+	if int64(len(raw)) > lim.maxDecompressedBytes {
+		return nil, fmt.Errorf("decompressed setlist exceeds %d bytes", lim.maxDecompressedBytes)
 	}
 
 	if !bytes.HasPrefix(raw, []byte("bplist")) {
@@ -91,7 +172,7 @@ func FromNative(data []byte, title string) ([]byte, error) {
 		return nil, fmt.Errorf("plist: %w", err)
 	}
 
-	items, err := itemsFromArchive(archive)
+	items, err := itemsFromArchive(archive, lim)
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +189,7 @@ func isOpenSetlistXML(data []byte) bool {
 	return strings.HasPrefix(s, "<?xml") || strings.HasPrefix(s, "<forScore")
 }
 
-func itemsFromArchive(archive map[string]any) ([]setlistItem, error) {
+func itemsFromArchive(archive map[string]any, lim limits) ([]setlistItem, error) {
 	objects, ok := archive["$objects"].([]any)
 	if !ok {
 		return nil, fmt.Errorf("NSKeyedArchiver: missing $objects")
@@ -117,7 +198,7 @@ func itemsFromArchive(archive map[string]any) ([]setlistItem, error) {
 	if !ok {
 		return nil, fmt.Errorf("NSKeyedArchiver: missing $top")
 	}
-	resolved, err := resolve(objects, top["setlist"])
+	resolved, err := resolveArchive(objects, top["setlist"], lim.maxDepth)
 	if err != nil {
 		return nil, fmt.Errorf("NSKeyedArchiver: %w", err)
 	}
@@ -128,6 +209,9 @@ func itemsFromArchive(archive map[string]any) ([]setlistItem, error) {
 	if !ok {
 		return nil, fmt.Errorf("NSKeyedArchiver: $top.setlist is not an array")
 	}
+	if len(rawItems) > lim.maxEntries {
+		return nil, entryLimitError(len(rawItems), lim.maxEntries)
+	}
 
 	out := make([]setlistItem, 0, len(rawItems))
 	for i, raw := range rawItems {
@@ -135,7 +219,7 @@ func itemsFromArchive(archive map[string]any) ([]setlistItem, error) {
 		if !ok {
 			return nil, fmt.Errorf("setlist item %d is not a dictionary", i+1)
 		}
-		item, err := classifyItem(dict)
+		item, err := classifyItem(dict, lim)
 		if err != nil {
 			return nil, fmt.Errorf("setlist item %d: %w", i+1, err)
 		}
@@ -144,9 +228,15 @@ func itemsFromArchive(archive map[string]any) ([]setlistItem, error) {
 	return out, nil
 }
 
-func classifyItem(dict map[string]any) (setlistItem, error) {
+func classifyItem(dict map[string]any, lim limits) (setlistItem, error) {
 	title, _ := dict["Title"].(string)
 	path, _ := dict["FilePath"].(string)
+	if err := checkString("Title", title, lim); err != nil {
+		return setlistItem{}, err
+	}
+	if err := checkString("FilePath", path, lim); err != nil {
+		return setlistItem{}, err
+	}
 
 	if isTruthy(dict["Placeholder"]) {
 		if title == "" {
@@ -167,6 +257,13 @@ func classifyItem(dict map[string]any) (setlistItem, error) {
 	}
 
 	return setlistItem{}, fmt.Errorf("unrecognized item (Title=%q FilePath=%q)", title, path)
+}
+
+func checkString(label, value string, lim limits) error {
+	if len(value) > lim.maxStringBytes {
+		return fmt.Errorf("%s exceeds %d bytes", label, lim.maxStringBytes)
+	}
+	return nil
 }
 
 func isBookmark(dict map[string]any) bool {
@@ -206,22 +303,56 @@ func isTruthy(v any) bool {
 	}
 }
 
-func resolve(objects []any, v any) (any, error) {
+type resolver struct {
+	objects  []any
+	memo     map[int]any
+	visiting map[int]bool
+	maxDepth int
+}
+
+func resolveArchive(objects []any, v any, maxDepth int) (any, error) {
+	r := resolver{
+		objects:  objects,
+		memo:     make(map[int]any),
+		visiting: make(map[int]bool),
+		maxDepth: maxDepth,
+	}
+	return r.resolve(v, 0)
+}
+
+func (r *resolver) resolve(v any, depth int) (any, error) {
+	if depth > r.maxDepth {
+		return nil, fmt.Errorf("object graph exceeds maximum depth %d", r.maxDepth)
+	}
+
 	switch t := v.(type) {
 	case plist.UID:
 		idx := int(t)
-		if idx < 0 || idx >= len(objects) {
+		if idx < 0 || idx >= len(r.objects) {
 			return nil, fmt.Errorf("UID %d out of range", idx)
 		}
-		return resolve(objects, objects[idx])
+		if r.visiting[idx] {
+			return nil, fmt.Errorf("cyclic object reference at UID %d", idx)
+		}
+		if cached, ok := r.memo[idx]; ok {
+			return cached, nil
+		}
+		r.visiting[idx] = true
+		resolved, err := r.resolve(r.objects[idx], depth+1)
+		delete(r.visiting, idx)
+		if err != nil {
+			return nil, err
+		}
+		r.memo[idx] = resolved
+		return resolved, nil
 	case []any:
 		out := make([]any, len(t))
-		for i, e := range t {
-			r, err := resolve(objects, e)
+		for i, element := range t {
+			resolved, err := r.resolve(element, depth+1)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("array element %d: %w", i, err)
 			}
-			out[i] = r
+			out[i] = resolved
 		}
 		return out, nil
 	case map[string]any:
@@ -229,47 +360,50 @@ func resolve(objects []any, v any) (any, error) {
 			return t, nil
 		}
 		keys, hasKeys := t["NS.keys"]
-		objs, hasObjs := t["NS.objects"]
-		if hasKeys && hasObjs {
-			rk, err := resolve(objects, keys)
+		objects, hasObjects := t["NS.objects"]
+		if hasKeys && hasObjects {
+			resolvedKeys, err := r.resolve(keys, depth+1)
 			if err != nil {
 				return nil, err
 			}
-			rv, err := resolve(objects, objs)
+			resolvedValues, err := r.resolve(objects, depth+1)
 			if err != nil {
 				return nil, err
 			}
-			keyList, ok1 := rk.([]any)
-			valList, ok2 := rv.([]any)
-			if !ok1 || !ok2 {
-				return nil, fmt.Errorf("NSDictionary keys/objects are not arrays")
+			keyList, ok := resolvedKeys.([]any)
+			if !ok {
+				return nil, fmt.Errorf("NSDictionary keys are not an array")
 			}
-			if len(keyList) != len(valList) {
+			valueList, ok := resolvedValues.([]any)
+			if !ok {
+				return nil, fmt.Errorf("NSDictionary objects are not an array")
+			}
+			if len(keyList) != len(valueList) {
 				return nil, fmt.Errorf("NSDictionary key/value count mismatch")
 			}
 			out := make(map[string]any, len(keyList))
-			for i, k := range keyList {
-				ks, ok := k.(string)
+			for i, key := range keyList {
+				keyString, ok := key.(string)
 				if !ok {
 					return nil, fmt.Errorf("NSDictionary key is not a string")
 				}
-				out[ks] = valList[i]
+				out[keyString] = valueList[i]
 			}
 			return out, nil
 		}
-		if hasObjs {
-			return resolve(objects, objs)
+		if hasObjects {
+			return r.resolve(objects, depth+1)
 		}
 		out := make(map[string]any, len(t))
-		for k, val := range t {
-			if k == "$class" {
+		for key, value := range t {
+			if key == "$class" {
 				continue
 			}
-			r, err := resolve(objects, val)
+			resolved, err := r.resolve(value, depth+1)
 			if err != nil {
 				return nil, err
 			}
-			out[k] = r
+			out[key] = resolved
 		}
 		return out, nil
 	default:
