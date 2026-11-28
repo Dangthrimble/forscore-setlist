@@ -1,0 +1,6 @@
+{
+  "description": "Convert forScore setlists and text lists into Open Setlist .4ss files.",
+  "topics": ["go", "forscore", "setlist", "cli", "music"],
+  "issues": true,
+  "discussions": false
+}
