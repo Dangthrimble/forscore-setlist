@@ -47,6 +47,26 @@ go run ./cmd/buildpackage \
 Archives are named `forscore-setlist-v<version>-<platform>.zip` for all six
 targets.
 
+## Repository settings
+
+Maintainer-only GitHub settings are applied with:
+
+```bash
+./scripts/apply-repo-settings.sh
+```
+
+The script requires `gh` authentication with admin access. It sets the
+description, topics, squash-only merging, automatic branch deletion, secret
+scanning and push protection, Dependabot alerts and automated security fixes,
+SHA-pinned Actions, read-only default workflow tokens, and the required
+`CI gate` status check.
+
+Use `--check` to report drift without changing anything:
+
+```bash
+./scripts/apply-repo-settings.sh --check
+```
+
 ## CI and releases
 
 [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) runs tests natively on
